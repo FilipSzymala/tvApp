@@ -8,6 +8,8 @@
   <meta keywords="HTML, JS, CSS, tv, tv programe, programe, what's in tv, tv series, toons">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
   <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" media="(min-width:768px)" href="css/tablet.css">
+  <link rel="stylesheet" media="(min-width:1024px)" href="css/desktop.css">
   <title>TV Maze</title>
 </head>
 <body>
@@ -24,6 +26,12 @@
           <button class="dropdown-item" data-show-name="fun">fun</button>
           <button class="dropdown-item" data-show-name="happy">happy</button>
         </div>
+      </div>
+      <div>
+        <form class="d-flex" id="searchForm">
+          <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+          <button class="btn btn-primary" type="submit">Search</button>
+        </form>
       </div>
     </div>
 

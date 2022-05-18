@@ -1,0 +1,11 @@
+.container {
+    max-width: 1320px;
+}
+
+.shows-wrapper .card {
+    max-width: calc(25% - 10px);
+}
+
+.card-preview-bg {
+    min-height: 350px;
+}
