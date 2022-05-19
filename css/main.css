@@ -1,5 +1,36 @@
+body::-webkit-scrollbar , .card-body::-webkit-scrollbar {
+  -webkit-appearance: none;
+}
+body::-webkit-scrollbar:vertical, .card-body::-webkit-scrollbar:vertical {
+  width: 11px;
+}
+body::-webkit-scrollbar:horizontal, .card-body::-webkit-scrollbar:horizontal {
+  height: 11px;
+}
+body::-webkit-scrollbar-thumb, .card-body::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  border: 2px solid white; /* should match background, can't be transparent */
+  background-color: rgba(0, 0, 0, .5);
+}
+body::-webkit-scrollbar-track, .card-body::-webkit-scrollbar-track { 
+  background-color: #fff; 
+  border-radius: 8px; 
+} 
+
 body {
   margin: 50px 0;
+}
+
+img {
+  transition: .3s all;
+}
+img:hover {
+  transform: scale(0.95);
+}
+
+.disclaimer {
+  text-align: center;
+  margin-top: 100px;
 }
 
 .search-bar {
@@ -20,6 +51,19 @@ body {
   margin-bottom: 1.5%;
 }
 
+.btn-div {
+  display: flex;
+  justify-content: space-between;
+}
+
+.btn--fav {
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 80%;
+  height: 38px;
+  width: 38px;
+}
+
 .show-preview {
   position: fixed;
   left: 50%;
@@ -36,6 +80,10 @@ body {
 
 .show-preview .card {
   height: 100%;
+}
+
+.card {
+  width: 100%;
 }
 
 .card-body {
@@ -65,22 +113,29 @@ body {
 .show-cast {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 20px;
+  justify-content: center;
+  align-items: center;
+  gap: 15px 30px;
 }
 
 .actor-card {
+  height: 100px;
+  width: 320px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr 3fr 1fr;
+  grid-template-rows: repeat(2, 1fr)
+}
+
+.actor-photo, .character-photo {
+  grid-row: span 2;
+  background-position: center;
+  width: 100%;
+}
+
+.actor-name, .character-name {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
-}
-
-.actor-card .actor-photo {
-  width: 100px;
-}
-
-.actor-card p {
-  font-size: 12px;
-  margin-bottom: 0;
   text-align: center;
 }

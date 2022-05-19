@@ -3,10 +3,15 @@ import { getShowById, getShowsByKey, getShowCastById } from "./requests.js"
 
 class tvApp {
     constructor() {
-        this.isDetailsOpen = false;
         this.viewElems = {};
         this.showNameButtons = {};
-        this.selectedName = "breaking bad";
+        this.selectedName = "breaking";
+        this.isDetailsOpen = false;
+        if (localStorage.getItem('favourites') !== null) {
+            this.favourites = JSON.parse(localStorage.getItem('favourites'));
+        } else {
+            this.favourites = [];
+        }
         this.initializeApp();
     }
 
@@ -32,6 +37,9 @@ class tvApp {
             this.showNameButtons[showName].addEventListener('click', this.setCurrentNameFilter);
         });
 
+        // favourites
+        this.viewElems.btnFavourites.addEventListener('click', this.showFavourites);
+
         // search menu
         this.viewElems.searchForm.addEventListener('submit', this.searchForShows);
     }
@@ -46,9 +54,20 @@ class tvApp {
     }
 
     renderCardsOnList = shows => {
+        if (shows.length == 0) {
+            const searchingShow = this.viewElems.searchForm.querySelector('input').value;
+            this.viewElems.disclaimer.innerText = `We couldn't find any shows such as ${searchingShow}`;
+        } else {
+            this.viewElems.disclaimer.innerText = ""
+        }
+
         Array.from(
             document.querySelectorAll('[data-show-id]')
-        ).forEach(btn => btn.removeEventListener('click', this.openDetailsView));
+        ).forEach(btn => {
+            btn.removeEventListener('click', this.openDetailsView);
+            btn.removeEventListener('click', this.toggleFavourite);
+        });
+
 
         this.viewElems.showsWrapper.innerHTML = "";
 
@@ -86,9 +105,23 @@ class tvApp {
         this.viewElems.showPreview.innerHTML = "";
     }
 
-    renderCast = (cast) => {
+    toggleFavourite = event => {
+        const favId = event.target.dataset.showId;
+
+        if (this.favourites.indexOf(favId) == -1) {
+            this.favourites.push(favId);
+            event.target.style.backgroundImage = 'url("../img/star_filled.svg")'
+        } else {
+            this.favourites.splice(this.favourites.indexOf(favId), 1);
+            event.target.style.backgroundImage = 'url("../img/star.svg")'
+        }
+        
+        localStorage.setItem('favourites', JSON.stringify(this.favourites))
+    };
+
+    createCastSection = (cast) => {
         let castArr = [];
-        console.log(cast)
+
         if (!cast) return false;
 
         for (const castMember of cast) {
@@ -101,6 +134,13 @@ class tvApp {
                 actorPhoto = createDOMElem('img', 'actor-photo', null, 'https://via.placeholder.com/100x140');
             }
 
+            let characterPhoto;
+            if (castMember.character.image) {
+                characterPhoto = createDOMElem('img', 'character-photo', null, `${castMember.character.image.medium}`);
+            } else {
+                characterPhoto = createDOMElem('img', 'character-photo', null, 'https://via.placeholder.com/100x140');
+            }
+
             const actorName = createDOMElem('p', 'actor-name');
             actorName.innerText = castMember.person.name;
 
@@ -108,18 +148,17 @@ class tvApp {
             if (castMember.character.name) {
                 characterName.innerText = castMember.character.name;
             } else {
-                characterName.innerText = "";
+                // if actor is not playing any character he is playing himself 
+                characterName.innerText = castMember.person.name;
             }
-            
-            
-    
-            actorCard.appendChild(actorPhoto);
+
+            actorCard.appendChild(characterPhoto);
             actorCard.appendChild(actorName);
+            actorCard.appendChild(actorPhoto);
             actorCard.appendChild(characterName);
 
             castArr.push(actorCard);
         }
-        
 
         return castArr;
     }
@@ -129,8 +168,11 @@ class tvApp {
         const divCardBody = createDOMElem('div', 'card-body');
         const main = createDOMElem('main', 'card-main');
         const h5 = createDOMElem('h5', 'card-title', show.name);
-        const btnDiv = createDOMElem('div', 'btnDiv')
-        const btn = createDOMElem('button', 'btn btn-primary', 'Show details');
+        const btnDiv = createDOMElem('div', 'btn-div')
+        const btnDet = createDOMElem('button', 'btn btn-primary', 'Show details');
+        const btnFav = createDOMElem('button', 'btn btn-warning btn--fav');
+        btnFav.style.backgroundImage= 'url("../img/star.svg")';
+        btnFav.style.backgroundImage= 'url("../img/star.svg")';
 
         let img, p;
 
@@ -163,49 +205,58 @@ class tvApp {
             p = createDOMElem('p', 'card-text', 'There is no summary for that show yet.');
         }
 
-        btn.dataset.showId = show.id;
-
-        let castDiv;
+        btnDet.dataset.showId = show.id;
+        btnFav.dataset.showId = show.id;
 
         if (isDetailed) {
-            btn.addEventListener('click', this.closeDetailsView);
-
-            castDiv = createDOMElem('div', 'show-cast');
-            // making show cast apper
-            getShowCastById(show.id).then(cast => this.renderCast(cast)).then(castArr => {
-                if (castArr != false) {
-                    for (const cast of castArr) {
-                        castDiv.appendChild(cast);
-                    }
-                } else {
-                    castDiv.innerText = "There are no information about this show cast"
-                }
-                
-                
-            });
+            btnDet.addEventListener('click', this.closeDetailsView);
         } else {
-            btn.addEventListener('click', this.openDetailsView);
+            btnDet.addEventListener('click', this.openDetailsView);
         }
+
+        btnFav.addEventListener('click', this.toggleFavourite)
+
+        let castDiv;
         const h6 = createDOMElem('h6', 'cast-title');
-        h6.innerText = "Show cast:";          
-        
-        
-        
+        h6.innerText = "Show cast:";
 
         divCard.appendChild(divCardBody);
         divCardBody.appendChild(main)
         main.appendChild(img);
         main.appendChild(h5);
         main.appendChild(p);
+
         if (isDetailed) {
-            main.appendChild(h6);
-        }
-        if (castDiv) {
+            castDiv = createDOMElem('div', 'show-cast');
+            p.after(h6)
+
+            getShowCastById(show.id).then(cast => this.createCastSection(cast)).then(castArr => {
+                if (castArr != false) {
+                    for (const cast of castArr) {
+                        castDiv.appendChild(cast);
+                    }
+                } else {
+                    castDiv.innerText = "There is no information about this show cast"
+                }
+            });
             main.appendChild(castDiv);
         }
         divCardBody.appendChild(btnDiv);
-        btnDiv.appendChild(btn);
+        btnDiv.appendChild(btnDet);
+        btnDiv.appendChild(btnFav)
+
         return divCard;
+    }
+
+    showFavourites = () => {
+        this.viewElems.showsWrapper.innerHTML = "";
+
+        for (const favourite of this.favourites) {
+            getShowById(favourite).then(show => {
+                const card = this.createShowCard(show);
+                this.viewElems.showsWrapper.appendChild(card);
+            });
+        }
     }
 
     searchForShows = event => {
@@ -217,6 +268,8 @@ class tvApp {
             getShowsByKey(searchingShow).then(shows => this.renderCardsOnList(shows));
         }
     }
+
+    
 }
 
 document.addEventListener("DOMContentLoaded", new tvApp());
