@@ -1,11 +1,11 @@
 import { mapListToDOMElements, createDOMElem } from "./domInteractions.js";
 import { getShowById, getShowsByKey, getShowCastById } from "./requests.js"
-
+import { createCastSection } from './showCast.js'
 class tvApp {
     constructor() {
         this.viewElems = {};
         this.showNameButtons = {};
-        this.selectedName = "breaking";
+        this.selectedName = "hello world";
         this.isDetailsOpen = false;
         if (localStorage.getItem('favourites') !== null) {
             this.favourites = JSON.parse(localStorage.getItem('favourites'));
@@ -58,7 +58,7 @@ class tvApp {
             const searchingShow = this.viewElems.searchForm.querySelector('input').value;
             this.viewElems.disclaimer.innerText = `We couldn't find any shows such as ${searchingShow}`;
         } else {
-            this.viewElems.disclaimer.innerText = ""
+            this.viewElems.disclaimer.innerText = "";
         }
 
         Array.from(
@@ -110,58 +110,14 @@ class tvApp {
 
         if (this.favourites.indexOf(favId) == -1) {
             this.favourites.push(favId);
-            event.target.style.backgroundImage = 'url("../img/star_filled.svg")'
+            event.target.style.backgroundImage = 'url("../img/star_filled.svg")';
         } else {
             this.favourites.splice(this.favourites.indexOf(favId), 1);
-            event.target.style.backgroundImage = 'url("../img/star.svg")'
+            event.target.style.backgroundImage = 'url("../img/star.svg")';
         }
-        
-        localStorage.setItem('favourites', JSON.stringify(this.favourites))
+
+        localStorage.setItem('favourites', JSON.stringify(this.favourites));
     };
-
-    createCastSection = (cast) => {
-        let castArr = [];
-
-        if (!cast) return false;
-
-        for (const castMember of cast) {
-            const actorCard = createDOMElem('div', 'actor-card');
-
-            let actorPhoto;
-            if (castMember.person.image) {
-                actorPhoto = createDOMElem('img', 'actor-photo', null, `${castMember.person.image.medium}`);
-            } else {
-                actorPhoto = createDOMElem('img', 'actor-photo', null, 'https://via.placeholder.com/100x140');
-            }
-
-            let characterPhoto;
-            if (castMember.character.image) {
-                characterPhoto = createDOMElem('img', 'character-photo', null, `${castMember.character.image.medium}`);
-            } else {
-                characterPhoto = createDOMElem('img', 'character-photo', null, 'https://via.placeholder.com/100x140');
-            }
-
-            const actorName = createDOMElem('p', 'actor-name');
-            actorName.innerText = castMember.person.name;
-
-            let characterName = createDOMElem('p', 'character-name');
-            if (castMember.character.name) {
-                characterName.innerText = castMember.character.name;
-            } else {
-                // if actor is not playing any character he is playing himself 
-                characterName.innerText = castMember.person.name;
-            }
-
-            actorCard.appendChild(characterPhoto);
-            actorCard.appendChild(actorName);
-            actorCard.appendChild(actorPhoto);
-            actorCard.appendChild(characterName);
-
-            castArr.push(actorCard);
-        }
-
-        return castArr;
-    }
 
     createShowCard = (show, isDetailed) => {
         const divCard = createDOMElem('div', 'card');
@@ -171,15 +127,19 @@ class tvApp {
         const btnDiv = createDOMElem('div', 'btn-div')
         const btnDet = createDOMElem('button', 'btn btn-primary', 'Show details');
         const btnFav = createDOMElem('button', 'btn btn-warning btn--fav');
-        btnFav.style.backgroundImage= 'url("../img/star.svg")';
-        btnFav.style.backgroundImage= 'url("../img/star.svg")';
+
+        if (this.favourites.indexOf(show.id.toString()) !== -1) {
+            btnFav.style.backgroundImage = 'url("../img/star_filled.svg")';
+        } else {
+            btnFav.style.backgroundImage = 'url("../img/star.svg")';
+        }
 
         let img, p;
 
         if (show.image) {
             if (isDetailed) {
                 img = createDOMElem('div', 'card-preview-bg');
-                img.style.backgroundImage = `url(${show.image.original})`
+                img.style.backgroundImage = `url(${show.image.original})`;
             } else {
                 img = createDOMElem('img', 'card-img-top', null, show.image.medium);
             }
@@ -215,7 +175,6 @@ class tvApp {
         }
 
         btnFav.addEventListener('click', this.toggleFavourite)
-
         let castDiv;
         const h6 = createDOMElem('h6', 'cast-title');
         h6.innerText = "Show cast:";
@@ -228,9 +187,9 @@ class tvApp {
 
         if (isDetailed) {
             castDiv = createDOMElem('div', 'show-cast');
-            p.after(h6)
+            p.after(h6);
 
-            getShowCastById(show.id).then(cast => this.createCastSection(cast)).then(castArr => {
+            getShowCastById(show.id).then(cast => createCastSection(cast)).then(castArr => {
                 if (castArr != false) {
                     for (const cast of castArr) {
                         castDiv.appendChild(cast);
@@ -241,9 +200,10 @@ class tvApp {
             });
             main.appendChild(castDiv);
         }
+
         divCardBody.appendChild(btnDiv);
         btnDiv.appendChild(btnDet);
-        btnDiv.appendChild(btnFav)
+        btnDiv.appendChild(btnFav);
 
         return divCard;
     }
@@ -268,8 +228,6 @@ class tvApp {
             getShowsByKey(searchingShow).then(shows => this.renderCardsOnList(shows));
         }
     }
-
-    
 }
 
 document.addEventListener("DOMContentLoaded", new tvApp());

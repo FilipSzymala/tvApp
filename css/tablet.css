@@ -2,6 +2,11 @@
     max-width: 720px;
 }
 
+.top-bar {
+    flex-direction: row;
+    justify-content: space-between;
+}
+
 .shows-wrapper .card {
     width: calc(50% - 10px);
 }
