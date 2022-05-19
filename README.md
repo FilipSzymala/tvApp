@@ -1,2 +1,2 @@
 # tvApp
-TvApp made with assistance of Radosław Madecki in semi-advanced Javascript course
+Improved TvApp made with help of Radosław Madecki's semi-advanced Javascript course.
